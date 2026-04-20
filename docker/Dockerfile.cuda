@@ -1,14 +1,16 @@
-FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04
+############################
+# builder — compile & install deps into an isolated venv
+############################
+FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04 AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    LANG=C.UTF-8 \
-    LC_ALL=C.UTF-8 \
-    HF_HOME=/root/.cache/huggingface \
-    HF_HUB_ENABLE_HF_TRANSFER=1 \
-    PIP_NO_CACHE_DIR=1
+    PIP_NO_CACHE_DIR=1 \
+    PATH=/opt/venv/bin:$PATH
 
+# python3.10-dev provides Python.h for pyopenjtalk; cmake + build-essential
+# cover its native build.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         python3.10 \
         python3.10-venv \
@@ -16,15 +18,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         python3-pip \
         git \
         cmake \
-        espeak-ng \
-        ffmpeg \
-        libsndfile1 \
-        ca-certificates \
         build-essential \
-    && ln -sf /usr/bin/python3.10 /usr/local/bin/python \
-    && ln -sf /usr/bin/python3.10 /usr/local/bin/python3 \
-    && python -m pip install --upgrade pip \
+        ca-certificates \
     && rm -rf /var/lib/apt/lists/*
+
+RUN python3.10 -m venv /opt/venv && pip install --upgrade pip
 
 # PyTorch 2.3.1 on CUDA 12.1 wheels (compatible with CUDA 12.4 runtime).
 RUN pip install --index-url https://download.pytorch.org/whl/cu121 \
@@ -41,6 +39,36 @@ RUN pip install -r /tmp/requirements.kokoro.txt
 COPY docker/requirements.api.txt /tmp/requirements.api.txt
 RUN pip install -r /tmp/requirements.api.txt
 
+
+############################
+# runtime — only the python interpreter + shared libs we need at runtime
+############################
+FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    HF_HOME=/root/.cache/huggingface \
+    HF_HUB_ENABLE_HF_TRANSFER=1 \
+    PATH=/opt/venv/bin:$PATH
+
+# The venv's /opt/venv/bin/python is a symlink to /usr/bin/python3.10, so the
+# runtime still needs the interpreter installed — but not the dev headers
+# or any build tools.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        python3.10 \
+        espeak-ng \
+        ffmpeg \
+        libsndfile1 \
+        libgomp1 \
+        ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /opt/venv /opt/venv
+
+WORKDIR /opt/api
 COPY app /opt/api/app
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
