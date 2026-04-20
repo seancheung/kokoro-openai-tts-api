@@ -24,9 +24,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN python3.10 -m venv /opt/venv && pip install --upgrade pip
 
-# PyTorch 2.3.1 on CUDA 12.1 wheels (compatible with CUDA 12.4 runtime).
-RUN pip install --index-url https://download.pytorch.org/whl/cu121 \
-        torch==2.3.1 torchaudio==2.3.1
+RUN pip install --index-url https://download.pytorch.org/whl/cu124 \
+        torch==2.4.1 torchaudio==2.4.1
 
 WORKDIR /opt/api
 

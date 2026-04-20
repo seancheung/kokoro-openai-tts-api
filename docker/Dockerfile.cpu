@@ -22,7 +22,7 @@ RUN python -m venv /opt/venv && pip install --upgrade pip
 # deps (typing-extensions, etc.) resolve, and pin the +cpu local version so
 # pip does not fall back to the CUDA-enabled manylinux wheel on PyPI.
 RUN pip install --extra-index-url https://download.pytorch.org/whl/cpu \
-        torch==2.3.1+cpu torchaudio==2.3.1+cpu
+        torch==2.4.1+cpu torchaudio==2.4.1+cpu
 
 WORKDIR /opt/api
 
