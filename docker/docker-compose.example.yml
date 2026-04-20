@@ -1,0 +1,31 @@
+services:
+  kokoro-cuda:
+    image: ghcr.io/seancheung/kokoro-openai-tts-api:cuda-latest
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./cache:/root/.cache
+    environment:
+      KOKORO_REPO_ID: "hexgrad/Kokoro-82M"
+      KOKORO_DEVICE: "cuda"
+      # Comma-separated; eagerly build pipelines / fetch voice .pt files at
+      # startup so the first request is fast. Leave empty to build lazily.
+      KOKORO_PRELOAD_LANGS: "a,b"
+      KOKORO_PRELOAD_VOICES: "af_heart"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  kokoro-cpu:
+    image: ghcr.io/seancheung/kokoro-openai-tts-api:latest
+    ports:
+      - "8010:8000"
+    volumes:
+      - ./cache:/root/.cache
+    environment:
+      KOKORO_REPO_ID: "hexgrad/Kokoro-82M"
+      KOKORO_DEVICE: "cpu"

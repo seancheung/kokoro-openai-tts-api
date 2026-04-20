@@ -1,0 +1,49 @@
+FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    HF_HOME=/root/.cache/huggingface \
+    HF_HUB_ENABLE_HF_TRANSFER=1 \
+    PIP_NO_CACHE_DIR=1
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        python3.10 \
+        python3.10-venv \
+        python3-pip \
+        git \
+        espeak-ng \
+        ffmpeg \
+        libsndfile1 \
+        ca-certificates \
+        build-essential \
+    && ln -sf /usr/bin/python3.10 /usr/local/bin/python \
+    && ln -sf /usr/bin/python3.10 /usr/local/bin/python3 \
+    && python -m pip install --upgrade pip \
+    && rm -rf /var/lib/apt/lists/*
+
+# PyTorch 2.3.1 on CUDA 12.1 wheels (compatible with CUDA 12.4 runtime).
+RUN pip install --index-url https://download.pytorch.org/whl/cu121 \
+        torch==2.3.1 torchaudio==2.3.1
+
+WORKDIR /opt/api
+
+COPY kokoro /opt/api/kokoro
+RUN pip install /opt/api/kokoro
+
+COPY docker/requirements.kokoro.txt /tmp/requirements.kokoro.txt
+RUN pip install -r /tmp/requirements.kokoro.txt
+
+COPY docker/requirements.api.txt /tmp/requirements.api.txt
+RUN pip install -r /tmp/requirements.api.txt
+
+COPY app /opt/api/app
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+VOLUME ["/root/.cache"]
+EXPOSE 8000
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["uvicorn", "app.server:app", "--host", "0.0.0.0", "--port", "8000"]

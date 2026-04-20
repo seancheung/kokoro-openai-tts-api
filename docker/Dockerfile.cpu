@@ -1,0 +1,49 @@
+FROM python:3.10-slim-bookworm
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    HF_HOME=/root/.cache/huggingface \
+    HF_HUB_ENABLE_HF_TRANSFER=1 \
+    PIP_NO_CACHE_DIR=1 \
+    KOKORO_DEVICE=cpu
+
+# espeak-ng is used by kokoro for OOD fallback and non-English languages;
+# libsndfile1 is required by soundfile; ffmpeg is used by PyAV for compressed
+# audio output.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        git \
+        espeak-ng \
+        ffmpeg \
+        libsndfile1 \
+        ca-certificates \
+        build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Pin CPU-only PyTorch. Use --extra-index-url alongside PyPI so transitive
+# deps (typing-extensions, etc.) resolve, and pin the +cpu local version so
+# pip does not fall back to the CUDA-enabled manylinux wheel on PyPI.
+RUN pip install --extra-index-url https://download.pytorch.org/whl/cpu \
+        torch==2.3.1+cpu torchaudio==2.3.1+cpu
+
+WORKDIR /opt/api
+
+# Install kokoro from the local submodule.
+COPY kokoro /opt/api/kokoro
+RUN pip install /opt/api/kokoro
+
+COPY docker/requirements.kokoro.txt /tmp/requirements.kokoro.txt
+RUN pip install -r /tmp/requirements.kokoro.txt
+
+COPY docker/requirements.api.txt /tmp/requirements.api.txt
+RUN pip install -r /tmp/requirements.api.txt
+
+COPY app /opt/api/app
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+VOLUME ["/root/.cache"]
+EXPOSE 8000
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["uvicorn", "app.server:app", "--host", "0.0.0.0", "--port", "8000"]

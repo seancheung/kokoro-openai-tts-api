@@ -1,0 +1,6 @@
+# Kokoro extras: Japanese + Mandarin G2P backends. English is pulled in by the
+# `kokoro` package itself (misaki[en]).
+misaki[ja]>=0.9.4
+misaki[zh]>=0.9.4
+# Faster HuggingFace downloads for first-run model / voice pack fetches.
+hf_transfer
