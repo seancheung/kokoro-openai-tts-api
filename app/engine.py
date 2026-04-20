@@ -39,11 +39,8 @@ class TTSEngine:
             os.environ.setdefault("HF_HOME", settings.kokoro_cache_dir)
 
         device = settings.resolved_device
-        if device == "mps":
-            os.environ.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", "1")
-
-        log.info("loading KModel repo_id=%s device=%s", settings.kokoro_repo_id, device)
-        self.model = KModel(repo_id=settings.kokoro_repo_id).to(device).eval()
+        log.info("loading KModel repo_id=%s device=%s", settings.kokoro_model, device)
+        self.model = KModel(repo_id=settings.kokoro_model).to(device).eval()
         self.device = device
         self.sample_rate = KOKORO_SAMPLE_RATE
 
@@ -85,7 +82,7 @@ class TTSEngine:
         log.info("building KPipeline lang=%s", lang_code)
         pipeline = KPipeline(
             lang_code=lang_code,
-            repo_id=self.settings.kokoro_repo_id,
+            repo_id=self.settings.kokoro_model,
             model=self.model,
             trf=self.settings.kokoro_use_transformer_g2p,
         )

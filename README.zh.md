@@ -155,9 +155,8 @@ with client.audio.speech.with_streaming_response.create(
 
 | 变量 | 默认值 | 说明 |
 |---|---|---|
-| `KOKORO_REPO_ID` | `hexgrad/Kokoro-82M` | 模型权重与音色包的 HuggingFace 仓库 id |
-| `KOKORO_DEVICE` | `auto` | `auto` 按 CUDA > MPS > CPU 优先级。也可强制 `cuda` / `mps` / `cpu` |
-| `KOKORO_CUDA_INDEX` | `0` | `cuda` / `auto` 时选择的 `cuda:N` |
+| `KOKORO_MODEL` | `hexgrad/Kokoro-82M` | 模型权重与音色包的 HuggingFace 仓库 id（或本地路径） |
+| `KOKORO_CUDA_INDEX` | `0` | CUDA 镜像中选择 `cuda:N`（CPU 镜像忽略） |
 | `KOKORO_CACHE_DIR` | — | 加载模型前写入 `HF_HOME` |
 | `KOKORO_PRELOAD_LANGS` | — | 启动时预构建的语言通道（逗号分隔，如 `a,b`） |
 | `KOKORO_PRELOAD_VOICES` | — | 启动时预下载的音色 id（逗号分隔） |

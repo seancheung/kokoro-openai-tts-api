@@ -154,9 +154,8 @@ All 54 voices published in `hexgrad/Kokoro-82M`. The authoritative catalogue is 
 
 | Variable | Default | Description |
 |---|---|---|
-| `KOKORO_REPO_ID` | `hexgrad/Kokoro-82M` | HuggingFace repo id for both model weights and voice packs |
-| `KOKORO_DEVICE` | `auto` | `auto` → CUDA > MPS > CPU. Or `cuda` / `mps` / `cpu` |
-| `KOKORO_CUDA_INDEX` | `0` | Selects `cuda:N` when device is `cuda` or `auto` |
+| `KOKORO_MODEL` | `hexgrad/Kokoro-82M` | HuggingFace repo id (or local path) hosting the model weights and voice packs |
+| `KOKORO_CUDA_INDEX` | `0` | Selects `cuda:N` in the CUDA image (CPU image ignores it) |
 | `KOKORO_CACHE_DIR` | — | Sets `HF_HOME` before model load |
 | `KOKORO_PRELOAD_LANGS` | — | Comma-separated lang codes to eagerly build at startup (e.g. `a,b`) |
 | `KOKORO_PRELOAD_VOICES` | — | Comma-separated voice ids to eagerly download at startup |

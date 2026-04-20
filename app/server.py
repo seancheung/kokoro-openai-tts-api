@@ -38,10 +38,10 @@ async def healthz(request: Request) -> HealthResponse:
     settings = request.app.state.settings
     engine: TTSEngine | None = request.app.state.engine
     if engine is None:
-        return HealthResponse(status="loading", repo_id=settings.kokoro_repo_id)
+        return HealthResponse(status="loading", model=settings.kokoro_model)
     return HealthResponse(
         status="ok",
-        repo_id=settings.kokoro_repo_id,
+        model=settings.kokoro_model,
         device=engine.device,
         sample_rate=engine.sample_rate,
         loaded_langs=engine.loaded_langs,

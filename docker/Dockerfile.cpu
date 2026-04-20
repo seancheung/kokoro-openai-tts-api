@@ -47,7 +47,6 @@ ENV PYTHONUNBUFFERED=1 \
     LC_ALL=C.UTF-8 \
     HF_HOME=/root/.cache/huggingface \
     HF_HUB_ENABLE_HF_TRANSFER=1 \
-    KOKORO_DEVICE=cpu \
     PATH=/opt/venv/bin:$PATH
 
 RUN apt-get update && apt-get install -y --no-install-recommends \

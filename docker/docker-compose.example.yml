@@ -6,8 +6,7 @@ services:
     volumes:
       - ./cache:/root/.cache
     environment:
-      KOKORO_REPO_ID: "hexgrad/Kokoro-82M"
-      KOKORO_DEVICE: "cuda"
+      KOKORO_MODEL: "hexgrad/Kokoro-82M"
       # Comma-separated; eagerly build pipelines / fetch voice .pt files at
       # startup so the first request is fast. Leave empty to build lazily.
       KOKORO_PRELOAD_LANGS: "a,b"
@@ -27,5 +26,4 @@ services:
     volumes:
       - ./cache:/root/.cache
     environment:
-      KOKORO_REPO_ID: "hexgrad/Kokoro-82M"
-      KOKORO_DEVICE: "cpu"
+      KOKORO_MODEL: "hexgrad/Kokoro-82M"

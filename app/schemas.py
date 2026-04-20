@@ -54,7 +54,7 @@ class VoiceList(BaseModel):
 
 class HealthResponse(BaseModel):
     status: Literal["ok", "loading", "error"]
-    repo_id: str
+    model: str
     device: Optional[str] = None
     sample_rate: Optional[int] = None
     loaded_langs: list[str] = []

@@ -10,8 +10,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="", case_sensitive=False, extra="ignore")
 
-    kokoro_repo_id: str = Field(default="hexgrad/Kokoro-82M")
-    kokoro_device: Literal["auto", "cuda", "mps", "cpu"] = Field(default="auto")
+    kokoro_model: str = Field(
+        default="hexgrad/Kokoro-82M",
+        description="HuggingFace repo id (or local path) hosting Kokoro weights + voices.",
+    )
     kokoro_cuda_index: int = Field(default=0)
     kokoro_cache_dir: Optional[str] = Field(default=None)
 
@@ -45,16 +47,9 @@ class Settings(BaseSettings):
     def resolved_device(self) -> str:
         import torch
 
-        if self.kokoro_device == "auto":
-            if torch.cuda.is_available():
-                return f"cuda:{self.kokoro_cuda_index}"
-            mps = getattr(torch.backends, "mps", None)
-            if mps is not None and mps.is_available():
-                return "mps"
-            return "cpu"
-        if self.kokoro_device == "cuda":
+        if torch.cuda.is_available():
             return f"cuda:{self.kokoro_cuda_index}"
-        return self.kokoro_device
+        return "cpu"
 
 
 @lru_cache(maxsize=1)
